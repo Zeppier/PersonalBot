@@ -11,12 +11,12 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.logging.BotLogger;
 
 
-public class AudioPathCommand extends BotCommand {
+public class CdCommand extends BotCommand {
 
-    public static final String LOGTAG = "AUDIO_PATH_COMMAND";
+    public static final String LOGTAG = "CD_COMMAND";
 
-    public AudioPathCommand() {
-        super("audio_path", "Установить путь, куда сохранять аудио");
+    public CdCommand() {
+        super("cd", "Текущая дериктория");
     }
 
     @Override
@@ -25,13 +25,11 @@ public class AudioPathCommand extends BotCommand {
         answer.setChatId(chat.getId().toString());
         String ans;
         if(strings.length!=0) {
-
-            if (TelegramParams.setAudioPath(String.join(" ", strings)))
-                ans = "Путь обновлен на: " + TelegramParams.getAudioPath();
-            else ans = "Путь указан неверно. Текущий путь: " + TelegramParams.getAudioPath();
-
+                if (TelegramParams.setCurrentDir(String.join(" ", strings)))
+                    ans = "Путь обновлен на: " + TelegramParams.getCurrentDir();
+                else ans = "Путь указан неверно. Текущий путь: " + TelegramParams.getCurrentDir();
         }
-        else ans = "Текущий путь: " + TelegramParams.getAudioPath();
+        else ans = "Текущий путь: " + TelegramParams.getCurrentDir();
         answer.setText(ans);
         try {
             absSender.execute(answer);

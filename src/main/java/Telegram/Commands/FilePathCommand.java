@@ -11,11 +11,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.logging.BotLogger;
 
 
-public class FilePathCommandCommand extends BotCommand {
+public class FilePathCommand extends BotCommand {
 
     public static final String LOGTAG = "FILE_PATH_COMMAND";
 
-    public FilePathCommandCommand() {
+    public FilePathCommand() {
         super("file_path", "Установить путь, куда сохранять файлы");
     }
 
@@ -25,8 +25,8 @@ public class FilePathCommandCommand extends BotCommand {
         answer.setChatId(chat.getId().toString());
         String ans;
         if(strings.length!=0) {
-            if (TelegramParams.setFilesPath(strings[0]))
-                ans = "Путь обновлен на: " + strings[0];
+            if (TelegramParams.setFilesPath(String.join(" ", strings)))
+                ans = "Путь обновлен на: " + TelegramParams.getFilesPath();
             else ans = "Путь указан неверно. Текущий путь: " + TelegramParams.getFilesPath();
         }
         else ans = "Текущий путь: " + TelegramParams.getFilesPath();
