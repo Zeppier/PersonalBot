@@ -1,6 +1,7 @@
 package Telegram.Commands;
 
 
+import Telegram.TelegramConstants;
 import Telegram.TelegramParams;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -21,20 +22,21 @@ public class CdCommand extends BotCommand {
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
-        SendMessage answer = new SendMessage();
-        answer.setChatId(chat.getId().toString());
-        String ans;
-        if(strings.length!=0) {
+        if (chat.getId().equals(TelegramConstants.getChatId())) {
+            SendMessage answer = new SendMessage();
+            answer.setChatId(chat.getId().toString());
+            String ans;
+            if (strings.length != 0) {
                 if (TelegramParams.setCurrentDir(String.join(" ", strings)))
                     ans = "Путь обновлен на: " + TelegramParams.getCurrentDir();
                 else ans = "Путь указан неверно. Текущий путь: " + TelegramParams.getCurrentDir();
-        }
-        else ans = "Текущий путь: " + TelegramParams.getCurrentDir();
-        answer.setText(ans);
-        try {
-            absSender.execute(answer);
-        } catch (TelegramApiException e) {
-            BotLogger.error(LOGTAG, e);
+            } else ans = "Текущий путь: " + TelegramParams.getCurrentDir();
+            answer.setText(ans);
+            try {
+                absSender.execute(answer);
+            } catch (TelegramApiException e) {
+                BotLogger.error(LOGTAG, e);
+            }
         }
     }
 }

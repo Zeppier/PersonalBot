@@ -1,5 +1,6 @@
 package Telegram.Commands;
 
+import Telegram.TelegramConstants;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.ICommandRegistry;
@@ -28,24 +29,25 @@ public class HelpCommand extends BotCommand {
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
+        if (chat.getId().equals(TelegramConstants.getChatId())) {
 
+            StringBuilder helpMessageBuilder = new StringBuilder("<b>Помощь</b>\n");
+            helpMessageBuilder.append("Вы можете использовать следующие команды:\n\n");
 
-        StringBuilder helpMessageBuilder = new StringBuilder("<b>Помощь</b>\n");
-        helpMessageBuilder.append("Вы можете использовать следующие команды:\n\n");
+            for (IBotCommand botCommand : commandRegistry.getRegisteredCommands()) {
+                helpMessageBuilder.append(botCommand.toString()).append("\n\n");
+            }
 
-        for (IBotCommand botCommand : commandRegistry.getRegisteredCommands()) {
-            helpMessageBuilder.append(botCommand.toString()).append("\n\n");
-        }
+            SendMessage helpMessage = new SendMessage();
+            helpMessage.setChatId(chat.getId().toString());
+            helpMessage.enableHtml(true);
+            helpMessage.setText(helpMessageBuilder.toString());
 
-        SendMessage helpMessage = new SendMessage();
-        helpMessage.setChatId(chat.getId().toString());
-        helpMessage.enableHtml(true);
-        helpMessage.setText(helpMessageBuilder.toString());
-
-        try {
-            absSender.execute(helpMessage);
-        } catch (TelegramApiException e) {
-            BotLogger.error(LOGTAG, e);
+            try {
+                absSender.execute(helpMessage);
+            } catch (TelegramApiException e) {
+                BotLogger.error(LOGTAG, e);
+            }
         }
     }
 }

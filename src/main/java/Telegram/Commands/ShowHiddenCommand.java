@@ -1,6 +1,7 @@
 package Telegram.Commands;
 
 
+import Telegram.TelegramConstants;
 import Telegram.TelegramParams;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -26,26 +27,27 @@ public class ShowHiddenCommand extends BotCommand {
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
-
-        SendMessage answer = new SendMessage();
-        answer.setChatId(chat.getId().toString());
-        String ans = "Показывать скрытые файлы? Сейчас файлы ";
-        if(TelegramParams.isShowHidden())
-            ans = ans+"показываются.";
-        else ans = ans+"скрыты.";
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<InlineKeyboardButton> keyboardButtonsRow1 = new ArrayList<>();
-        keyboardButtonsRow1.add(new InlineKeyboardButton().setText("Да").setCallbackData("yes"));
-        keyboardButtonsRow1.add(new InlineKeyboardButton().setText("Нет").setCallbackData("no"));
-        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
-        rowList.add(keyboardButtonsRow1);
-        inlineKeyboardMarkup.setKeyboard(rowList);
-        answer.setReplyMarkup(inlineKeyboardMarkup);
-        answer.setText(ans);
-        try {
-            absSender.execute(answer);
-        } catch (TelegramApiException e) {
-            BotLogger.error(LOGTAG, e);
+        if (chat.getId().equals(TelegramConstants.getChatId())) {
+            SendMessage answer = new SendMessage();
+            answer.setChatId(chat.getId().toString());
+            String ans = "Показывать скрытые файлы? Сейчас файлы ";
+            if (TelegramParams.isShowHidden())
+                ans = ans + "показываются.";
+            else ans = ans + "скрыты.";
+            InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+            List<InlineKeyboardButton> keyboardButtonsRow1 = new ArrayList<>();
+            keyboardButtonsRow1.add(new InlineKeyboardButton().setText("Да").setCallbackData("yes"));
+            keyboardButtonsRow1.add(new InlineKeyboardButton().setText("Нет").setCallbackData("no"));
+            List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+            rowList.add(keyboardButtonsRow1);
+            inlineKeyboardMarkup.setKeyboard(rowList);
+            answer.setReplyMarkup(inlineKeyboardMarkup);
+            answer.setText(ans);
+            try {
+                absSender.execute(answer);
+            } catch (TelegramApiException e) {
+                BotLogger.error(LOGTAG, e);
+            }
         }
     }
 }

@@ -31,22 +31,21 @@ import static Telegram.Service.Instruments.replaceForbidenChars;
 
 public class CommandsHandler extends TelegramLongPollingCommandBot {
     public static final String LOGTAG = "COMMANDSHANDLER";
-    private CdCommand cdCommand = new CdCommand();
-    private AudioPathCommand audioPathCommand = new AudioPathCommand();
-    private FilePathCommand filePathCommand = new FilePathCommand();
-    private ShowHiddenCommand showHiddenCommand = new ShowHiddenCommand();
+    private final ShowHiddenCommand showHiddenCommand = new ShowHiddenCommand();
     public CommandsHandler(String botUsername) {
         super(botUsername);
-        register(filePathCommand);
-        register(audioPathCommand);
-        register(cdCommand);
+        register(new FilePathCommand());
+        register(new AudioPathCommand());
+        register(new CdCommand());
         register(showHiddenCommand);
         HelpCommand helpCommand = new HelpCommand(this);
         register(new HelpCommand(this));
 
         registerDefaultAction((absSender, message) -> {
-            sendMessage(message.getChatId(), "Мы не знаем команду '" + message.getText() + "'." + Emoji.FACE_WITH_STUCK_OUT_TONGUE_AND_TIGHTLY_CLOSED_EYES);
-            helpCommand.execute(absSender, message.getFrom(), message.getChat(), new String[] {});
+            if (message.getChatId().equals(TelegramConstants.getChatId())) {
+                sendMessage(message.getChatId(), "Мы не знаем команду '" + message.getText() + "'." + Emoji.FACE_WITH_STUCK_OUT_TONGUE_AND_TIGHTLY_CLOSED_EYES);
+                helpCommand.execute(absSender, message.getFrom(), message.getChat(), new String[]{});
+            } else sendMessage(message.getChatId(), "У вас нет доступа к данному боту.");
         });
     }
 
@@ -133,15 +132,17 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
 
     }
     private void sendMessage(Long chatId, String text) {
-        if (!text.isEmpty()) {
-            SendMessage sendMessage = new SendMessage();
-            setButtons(sendMessage);
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(text);
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
-                BotLogger.error(LOGTAG, e);
+        if (chatId.equals(TelegramConstants.getChatId())) {
+            if (!text.isEmpty()) {
+                SendMessage sendMessage = new SendMessage();
+                setButtons(sendMessage);
+                sendMessage.setChatId(chatId);
+                sendMessage.setText(text);
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    BotLogger.error(LOGTAG, e);
+                }
             }
         }
     }
