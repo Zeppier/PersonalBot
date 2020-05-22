@@ -5,6 +5,7 @@ import Telegram.Commands.*;
 import Telegram.Service.Emoji;
 import Telegram.TelegramConstants;
 import Telegram.TelegramParams;
+import com.google.inject.internal.cglib.core.$CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
@@ -25,19 +26,18 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 
-import static Telegram.Service.Instruments.longToSize;
-import static Telegram.Service.Instruments.replaceForbidenChars;
+import static Telegram.Service.Instruments.*;
 
 
 public class CommandsHandler extends TelegramLongPollingCommandBot {
     public static final String LOGTAG = "COMMANDSHANDLER";
-    private final ShowHiddenCommand showHiddenCommand = new ShowHiddenCommand();
+
     public CommandsHandler(String botUsername) {
         super(botUsername);
         register(new FilePathCommand());
         register(new AudioPathCommand());
         register(new CdCommand());
-        register(showHiddenCommand);
+        register(new ShowHiddenCommand());
         HelpCommand helpCommand = new HelpCommand(this);
         register(new HelpCommand(this));
 
@@ -67,7 +67,7 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
                             if (files != null) {
                                 Arrays.sort(files, Comparator.comparing(File::isFile));
                                 for (File direct : files) {
-                                    if(!direct.isHidden() || TelegramParams.isShowHidden()) {
+                                    if (!direct.isHidden() || TelegramParams.isShowHidden()) {
                                         if (direct.isDirectory()) {
                                             if (direct.list() != null)
                                                 answer.append(Emoji.ENVELOPE).append(" ").append(direct.getName()).append(" - ").append(Objects.requireNonNull(direct.list()).length).append("\n");
@@ -80,21 +80,32 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
                             }
                         }
                         break;
-                    case "show":
-                        showHiddenCommand.execute(this, update.getMessage().getFrom(), update.getMessage().getChat(), new String[] {});
+                    case "Старт":
+                        MediaKeyStartPause();
                         break;
                     default:
-                        File file;
-                        if (message.getText().contains(":/")) {
-                             file = new File(message.getText());
-                        } else file = new File(TelegramParams.getCurrentDir()+message.getText());
-                        if (file.exists()) {
-                            try {
-                                sendDocUploadingAFile(message.getChatId(), file, "Вот ваш файл");
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
-                            }
-                        } else sendMessage(message.getChatId(), "Файл не найден.");
+                        if (Emoji.PLAY_PAUSE.toString().contains(message.getText())) {
+                            MediaKeyStartPause();
+                            sendMessage(message.getChatId(), "Сигнал отправлен.");
+                        } else if (Emoji.NEXT.toString().contains(message.getText())) {
+                            MediaKeyForward();
+                            sendMessage(message.getChatId(), "Сигнал отправлен.");
+                        } else if (Emoji.PREVIOUS.toString().contains(message.getText())) {
+                            MediaKeyBack();
+                            sendMessage(message.getChatId(), "Сигнал отправлен.");
+                        } else {
+                            File file;
+                            if (message.getText().contains(":/")) {
+                                file = new File(message.getText());
+                            } else file = new File(TelegramParams.getCurrentDir() + message.getText());
+                            if (file.exists()) {
+                                try {
+                                    sendDocUploadingAFile(message.getChatId(), file, "Вот ваш файл");
+                                } catch (TelegramApiException e) {
+                                    e.printStackTrace();
+                                }
+                            } else sendMessage(message.getChatId(), "Файл не найден.");
+                        }
                 }
             }
             else if (message.hasDocument()) {
@@ -160,22 +171,7 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         }
     }
 
-    public synchronized void setButtons(SendMessage sendMessage) {
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        sendMessage.setReplyMarkup(replyKeyboardMarkup);
-        replyKeyboardMarkup.setSelective(true);
-        replyKeyboardMarkup.setResizeKeyboard(true);
-        replyKeyboardMarkup.setOneTimeKeyboard(false);
 
-        List<KeyboardRow> keyboard = new ArrayList<>();
-
-        KeyboardRow keyboardFirstRow = new KeyboardRow();
-        keyboardFirstRow.add(new KeyboardButton("Список файлов"));
-
-        keyboard.add(keyboardFirstRow);
-
-        replyKeyboardMarkup.setKeyboard(keyboard);
-    }
 
     @Override
     public String getBotToken() {
